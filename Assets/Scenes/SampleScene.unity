@@ -1585,7 +1585,6 @@ MonoBehaviour:
   EmptyCount: 0
   BlackCount: 0
   WhiteCount: 0
-  Black: {x: 0, y: 0, z: 0}
   Kaiten: {x: 0, y: 0, z: 180}
   MarkerManger: {fileID: 690404379}
   TrunStateManager: 1
@@ -1599,8 +1598,7 @@ MonoBehaviour:
   Okeru: 0
   tran: {fileID: 1187278512}
   ClickLink: 0
-  t1: {fileID: 0}
-  t2: {fileID: 0}
+  okerunPre: {fileID: 20098864098483616, guid: 6af83bb3e93448a44939bfa3aaf9eceb, type: 3}
 --- !u!4 &782476646
 Transform:
   m_ObjectHideFlags: 0

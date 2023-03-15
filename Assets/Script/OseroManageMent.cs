@@ -29,8 +29,7 @@ namespace osero
             BlackTrun,//黒のターン
             WhiteTurn//白のターン
         };
-        public Vector3 Black=new Vector3(0,0,0);//黒
-        public Vector3 Kaiten=new Vector3(0,0,180);//白
+        public Vector3 Kaiten=new Vector3(0,0,180);//回転
         public GameObject MarkerManger;//マーカーの親オブジェクト
         public Transform[,] MarkerPos=new Transform[8,8];//マーカーのポジションを保持
         public GameObject[,] Marker=new GameObject[8,8];//マーカーのポジションを保持
@@ -49,8 +48,11 @@ namespace osero
         public bool Okeru;
         public TextMeshProUGUI tran;
         public bool ClickLink;
-        public GameObject t1;
-        public GameObject t2;
+        public bool[,] Check=new bool[8,8];
+
+        public GameObject okerunPre;
+        public GameObject[,] okerun=new GameObject[8,8];
+
 
         
         
@@ -65,6 +67,7 @@ namespace osero
        
         void Update()
         {
+            muri();
             DiskPut();//オセロの駒を置く
             GameEnd();//ゲームが終わった時の処理
         }
@@ -112,7 +115,9 @@ namespace osero
                 for(int x=0;x<8;x++)
                 {
                     Disk[y,x]=Instantiate(DiskPre,MarkerPos[y,x]);
+                    okerun[y,x]=Instantiate(okerunPre,MarkerPos[y,x]);
                     Disk[y,x].transform.parent=Marker[y,x].transform;
+                    okerun[y,x].transform.parent=Marker[y,x].transform;
                 }        
             }        
         }
@@ -131,6 +136,7 @@ namespace osero
                 {
                     DiskStateManager[y,x]=DiskState.EMPTY;//すべての駒を空状態に
                     Disk[y,x].SetActive(false);//すべての駒を非アクティブに
+                    okerun[y,x].SetActive(false);
                 }        
             }
 
@@ -159,7 +165,6 @@ namespace osero
             }
         }
 
-        [PunRPC]
         void Link(bool CL)
         {
             ClickLink=CL;
@@ -175,6 +180,7 @@ namespace osero
         {
             // //マウスの左ボタンを押したら 
             if (!Input.GetMouseButtonDown(0))return;
+            
           
             GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
 
@@ -182,9 +188,11 @@ namespace osero
 
             GamePlay=false;//ゲームを開始
             //クリックオブジェクトの子供の情報を取得
-            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject; 
-            DiskTurnBlack();
-            DiskTurnWhite();
+            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;
+            // if(TrunStateManager == TrunState.BlackTrun)DiskTurn(DiskState.BLACK);
+            // else DiskTurn(DiskState.WHITE);
+            DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+            
         }
 
         /// <summary>
@@ -209,77 +217,79 @@ namespace osero
         /// </summary>
         void FindAround()
         {
+            //置いたマスの周り８マスを見る
             for(int a=-1;a<2;a++)
             {
                 for(int b=-1;b<2;b++)
                 {
-                    //周りに駒があって自分の駒以外なら
-                    if(a+PutDisktmp1>=0&&a+PutDisktmp1<8
-                    &&b+PutDisktmp2>=0&&b+PutDisktmp2<8
-                    &&!(a==0&&b==0))
+                    //もし今置いたコマなら次に
+                    if (a == 0 && b == 0)
                     {
-                        if(DiskStateManager[a+PutDisktmp1,b+PutDisktmp2]!=DiskStateManager[PutDisktmp1,PutDisktmp2]
-                        &&(DiskStateManager[a+PutDisktmp1,b+PutDisktmp2]!=DiskState.EMPTY))
+                        continue;
+                    }
+
+                    //書くのがめんどくさいから置いたマスの横をｘ縦をｙと置く
+                    int x = a + PutDisktmp1;
+                    int y = b + PutDisktmp2;
+
+                    //枠外からはみ出てたら次に
+                    if (x < 0 || x > 7 || y < 0 || y > 7)
+                    {
+                        continue;
+                    }
+
+                    //同じく書くのがめんどいから
+                    DiskState diskState = DiskStateManager[x, y];
+                    DiskState putDiskState = DiskStateManager[PutDisktmp1, PutDisktmp2];
+
+                    //置いたコマの状態が同じか空なら次に
+                    if (diskState == putDiskState || diskState == DiskState.EMPTY)
+                    {
+                        continue;
+                    }
+
+                    int dx = a;
+                    int dy = b;
+
+                    while (true)
+                    {
+                        x += dx;
+                        y += dy;
+
+                        if (x < 0 || x > 7 || y < 0 || y > 7)
                         {
-                            int k=a+PutDisktmp1;
-                            int l=b+PutDisktmp2;
+                            break;
+                        }
 
-                            //横
-                            if(a!=0&&b==0)
+                        diskState = DiskStateManager[x, y];
+
+                        if (diskState == DiskState.EMPTY)
+                        {
+                            break;
+                        }
+
+                        if (diskState == putDiskState)
+                        {
+                            PutOK = true;
+                            Okeru = true;
+
+                            for (int i = x - dx, j = y - dy; (i != PutDisktmp1 || j != PutDisktmp2); i -= dx, j -= dy)
                             {
-                                for(int h=a+PutDisktmp1;h>=0&&h<=7;h=h+a)
-                                {
-                                    if(DiskStateManager[h,b+PutDisktmp2]==DiskStateManager[PutDisktmp1,PutDisktmp2])
-                                    {
-                                        PutOK=true;
-                                        Okeru=true;
-                                    }
-                                }
-                            }
-                            //縦
-                            else if(a==0&&b!=0)
-                            {
-                                for(int h=b+PutDisktmp2;h>=0&&h<=7;h+=b)
-                                {
-                                    if(DiskStateManager[a+PutDisktmp1,h]==DiskStateManager[PutDisktmp1,PutDisktmp2])
-                                    {
-                                        PutOK=true;
-                                        Okeru=true;
-                                    }
-                                }
-                            }
-                            //斜め
-                            else if(a!=0&&b!=0)
-                            {
-                               for(int g=a+PutDisktmp1,h=b+PutDisktmp2;g>=0&&g<=7&&h>=0&&h<=7;g+=a,h+=b)
-                               {
-                                   if(DiskStateManager[g,h]==DiskStateManager[PutDisktmp1,PutDisktmp2])
-                                    {
-                                        PutOK=true;
-                                        Okeru=true;
-                                    }
-                               }
+                                ReverseDisktmp1.Add(i);
+                                ReverseDisktmp2.Add(j);
+                                ReverseDisk.Add(Disk[i, j]);
                             }
 
-                            if(PutOK==true)
-                            {
-                                while(DiskStateManager[k,l]==DiskStateManager[a+PutDisktmp1,b+PutDisktmp2])
-                                {
-                                    ReverseDisktmp1.Add(k);
-                                    ReverseDisktmp2.Add(l);
-                                    ReverseDisk.Add(Disk[k,l]);
-                                    k+=a;
-                                    l+=b;
-                                }
-                                DiskMove();
-                                PutOK=false;
-                            }
-
-
+                            break;
                         }
                     }
 
                 }
+            }
+
+            if (PutOK)
+            {
+                DiskMove();
             }
         }
 
@@ -291,9 +301,10 @@ namespace osero
             for(int i = 0; i < ReverseDisk.Count; i++) 
             {
                 ReverseDisk[i].transform.Rotate(Kaiten);
-                if(DiskStateManager[ReverseDisktmp1[i],ReverseDisktmp2[i]]==DiskState.BLACK)
-                DiskStateManager[ReverseDisktmp1[i],ReverseDisktmp2[i]]=DiskState.WHITE;
-                else DiskStateManager[ReverseDisktmp1[i],ReverseDisktmp2[i]]=DiskState.BLACK;
+
+                DiskStateManager[ReverseDisktmp1[i],ReverseDisktmp2[i]]
+                =DiskStateManager[ReverseDisktmp1[i],ReverseDisktmp2[i]]==DiskState.BLACK?DiskState.WHITE:DiskState.BLACK;
+                
             }
             ReverseDisk.Clear();
             ReverseDisktmp1.Clear();
@@ -318,87 +329,163 @@ namespace osero
             }
         }
 
-        /// <summary>
-        /// もし黒のTurnなら
-        /// </summary>
-        void DiskTurnBlack()
+        
+        void DiskTurn(DiskState state)
         {
-            //もし黒のターンで子供が非アクティブなら
-            if(TrunStateManager!=TrunState.BlackTrun||clickedDisk.activeInHierarchy)return;
+            //もし状態に合わせてターンが異なる、または子供が非アクティブなら
+            if ((state == DiskState.BLACK && TrunStateManager != TrunState.BlackTrun) ||
+                (state == DiskState.WHITE && TrunStateManager != TrunState.WhiteTurn) ||
+                clickedDisk.activeInHierarchy)
+                return;
 
             //置いたコマの配列での座標を一時的に保持する
             DiskTmp();
-            //置いた駒の状態を黒に変更
-            DiskStateManager[PutDisktmp1,PutDisktmp2]=DiskState.BLACK;
+            //置いた駒の状態を変更
+            DiskStateManager[PutDisktmp1, PutDisktmp2] = state;
             //置いたコマの周りの8マスの状態を確認
             FindAround();
-            if(Okeru)
+            if (Okeru)
             {
-                tran.text=TrunStateManager==TrunState.BlackTrun?"whiteTurn":"BlackTurn";
+                tran.text = TrunStateManager == TrunState.BlackTrun ? "whiteTurn" : "BlackTurn";
+                if (state == DiskState.WHITE)
+                {
+                    //クリックした駒を白に変更
+                    clickedDisk.transform.Rotate(Kaiten);
+                }
+                for(int g=0;g<8;g++)
+                {
+                    for(int h=0;h<8;h++)
+                    {
+                        okerun[g,h].SetActive(Check[g,h]);
+                        Check[g,h]=false;
+                    }
+                }
                 //子供の状態をアクティブする
                 clickedDisk.SetActive(true);
-                //黒の駒の数を１つ増やす
-                BlackCount++;
                 //空の駒の数を１つ減らす
                 EmptyCount--;
-                //白のターンにする
-                TrunStateManager=TrunState.WhiteTurn;
-                Okeru=false;
+                //ターンを切り替える
+                TrunStateManager = state == DiskState.BLACK ? TrunState.WhiteTurn : TrunState.BlackTrun;
+                Okeru = false;
             }
-            else DiskStateManager[PutDisktmp1,PutDisktmp2]=DiskState.EMPTY;
-
-
+            else
+            {
+                DiskStateManager[PutDisktmp1, PutDisktmp2] = DiskState.EMPTY;
+            }
         }
+
         /// <summary>
-        /// もし白のTurnなら
+        /// 駒がおけないときの処理
         /// </summary>
-        void DiskTurnWhite()
-        {
+        void muri()
+        {            
+            //空いてるマスの周り８マスに自分の駒と同じ色しかない
+            // 
+            //空いてるマスの周り８マスに自分の駒と同じ色しかない
+            //空いてるマスの周り８マスに自分の駒と同じ色しかない
+            for(int g=0;g<8;g++)
+            {
+                for(int h=0;h<8;h++)
+                {
+                    if(DiskStateManager[g, h]==DiskState.EMPTY)
+                    {
+                        for(int a=-1;a<2;a++)
+                        {
+                            for(int b=-1;b<2;b++)
+                            {
+                                //もし今置いたコマなら次に
+                                if (a == 0 && b == 0)
+                                {
+                                    continue;
+                                }
             
-             //もし白のターンで子供が非アクティブなら
-            if(TrunStateManager!=TrunState.WhiteTurn||clickedDisk.activeInHierarchy)return;
-
-
-            //置いたコマの配列での座標を一時的に保持する
-            DiskTmp();
-            //置いた駒の状態を白に変更
-            DiskStateManager[PutDisktmp1,PutDisktmp2]=DiskState.WHITE;
-            //置いたコマの周りの8マスの状態を確認
-            FindAround();
-            if(Okeru)
-            {
-                tran.text=TrunStateManager==TrunState.BlackTrun?"whiteTurn":"BlackTurn";
-                //クリックした駒を白に変更
-                clickedDisk.transform.Rotate(Kaiten);
-                //子供の状態をアクティブする
-                clickedDisk.SetActive(true);
-                //白の駒の数を１つ増やす
-                WhiteCount++;
-                //空の駒の数を１つ減らす
-                EmptyCount--;
-                //黒のターンにする
-                TrunStateManager=TrunState.BlackTrun;
-                Okeru=false;
+                                //書くのがめんどくさいから置いたマスの横をｘ縦をｙと置く
+                                int x = a + g;
+                                int y = b + h;
+            
+                                //枠外からはみ出てたら次に
+                                if (x < 0 || x > 7 || y < 0 || y > 7)
+                                {
+                                    continue;
+                                }
+            
+                                //同じく書くのがめんどいから
+                                DiskState diskState=DiskStateManager[x, y];
+                                DiskState putDiskState=TrunStateManager == TrunState.BlackTrun?DiskState.BLACK:DiskState.WHITE;
+            
+                                //置いたコマの状態が同じか空なら次に
+                                if (diskState == putDiskState || diskState == DiskState.EMPTY)
+                                {
+                                    continue;
+                                }
+            
+                                int dx = a;
+                                int dy = b;
+            
+                                while (true)
+                                {
+                                    x += dx;
+                                    y += dy;
+            
+                                    if (x < 0 || x > 7 || y < 0 || y > 7)
+                                    {
+                                        break;
+                                    }
+            
+                                    diskState = DiskStateManager[x, y];
+            
+                                    if (diskState == DiskState.EMPTY)
+                                    {
+                                        break;
+                                    }
+            
+                                    if (diskState == putDiskState)
+                                    {
+                                        Check[g,h]=true;
+            
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+            
+                }
             }
-            else DiskStateManager[PutDisktmp1,PutDisktmp2]=DiskState.EMPTY;
-
-
-        }
-
-
-        /// <summary>
-        /// ゲームが終わった時の処理
-        /// </summary>
-        void GameEnd()
-        {
-            if(EmptyCount==0&&!GamePlay)
-            {
-                Debug.Log("白が"+WhiteCount);
-                Debug.Log("黒が"+BlackCount);
-                DiskPrepare();
-                GamePlay=true;
+            
+                    }
+            
+            
+            
+                    /// <summary>
+                    /// ゲームが終わった時の処理
+                    /// </summary>
+                    void GameEnd()
+                    {
+                        if(EmptyCount==0&&!GamePlay)
+                        {
+                        
+                            int whiteCount = 0;
+                            int blackCount = 0;
+            
+                            foreach (DiskState diskState in DiskStateManager)
+                            {
+                                if (diskState == DiskState.WHITE)
+                                {
+                                    whiteCount++;
+                                }
+                                else if (diskState == DiskState.BLACK)
+                                {
+                                    blackCount++;
+                                }
+                            }
+                            
+                            Debug.Log("白が"+whiteCount);
+                            Debug.Log("黒が"+blackCount);
+                            DiskPrepare();
+                            GamePlay=true;
+                        }
+                    }
+                }
             }
-        }
-    }
-}
 
