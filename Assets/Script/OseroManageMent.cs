@@ -32,7 +32,7 @@ namespace osero
         public Vector3 Black=new Vector3(0,0,0);//黒
         public Vector3 Kaiten=new Vector3(0,0,180);//白
         public GameObject MarkerManger;//マーカーの親オブジェクト
-        public Vector3[,] MarkerPos=new Vector3[8,8];//マーカーのポジションを保持
+        public Transform[,] MarkerPos=new Transform[8,8];//マーカーのポジションを保持
         public GameObject[,] Marker=new GameObject[8,8];//マーカーのポジションを保持
         public GameObject[,] Disk=new GameObject[8,8]; //オセロの駒の位置管理
         private GameObject clickedGameObject;//クリックしたオブジェクトを保持 
@@ -57,54 +57,19 @@ namespace osero
 
         void Awake()
         {
-             MarkerSetUp();//マーカーのポジションを取得
+            MarkerSetUp();//マーカーのポジションを取得
+            DiskInstantiate();//ディスクを生成する
+            DiskPrepare();//ディスクを初期化する
         }
         
-        void Start()
-        {
-             
-            PhotonNetwork.ConnectUsingSettings();
-        }
+       
         void Update()
         {
             DiskPut();//オセロの駒を置く
-            //GameEnd();//ゲームが終わった時の処理
+            GameEnd();//ゲームが終わった時の処理
         }
-        public override void OnConnectedToMaster()
-        {
-            PhotonNetwork.JoinRandomRoom();
-            Debug.Log("接続したで！");
-        }
-        public override void OnJoinedLobby()
-        {
-            PhotonNetwork.JoinRandomRoom();
         
-        }
-
-        public override void OnJoinRandomFailed(short returnCode, string message)
-        {
-            RoomOptions roomOptions = new RoomOptions();
-            roomOptions.MaxPlayers = 2;
-            PhotonNetwork.CreateRoom(null, roomOptions);
-        }
-
-        public override void OnJoinedRoom()
-        {
-            if(PhotonNetwork.LocalPlayer.IsMasterClient)
-            {
-                
-                //DiskInstantiate();//ディスクを生成する
-                //DiskPrepare();//ディスクを初期化する 
-                
-             
-            }
-            else
-            {
-                //test();
-                //DiskPrepare();//ディスクを初期化する 
-
-            }
-        }
+        
 
         
         /// <summary>
@@ -118,7 +83,7 @@ namespace osero
                 for(int i=0;i<8;i++)
                 {
                     Marker[y,i]=MarkerManger.transform.GetChild(a).gameObject;
-                    MarkerPos[y,i]=MarkerManger.transform.GetChild(a).transform.position;
+                    MarkerPos[y,i]=MarkerManger.transform.GetChild(a).transform;
                     a+=1; 
                 }
             }
@@ -146,7 +111,7 @@ namespace osero
             {
                 for(int x=0;x<8;x++)
                 {
-                    Disk[y,x]=PhotonNetwork.Instantiate(DiskPre.name,MarkerPos[y,x],Quaternion.identity,0);
+                    Disk[y,x]=Instantiate(DiskPre,MarkerPos[y,x]);
                     Disk[y,x].transform.parent=Marker[y,x].transform;
                 }        
             }        
