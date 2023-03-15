@@ -173,11 +173,9 @@ namespace osero
         
         void DiskPut()
         {
-            //マウスの左ボタンを押したら 
+            // //マウスの左ボタンを押したら 
             if (!Input.GetMouseButtonDown(0))return;
-            if(TrunStateManager==TrunState.BlackTrun)tran.text="whiteTurn";
-            else tran.text="BlackTurn";
-
+          
             GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
 
             if(clickedGameObject==null)return;//clickedGameObjectが空
@@ -336,6 +334,7 @@ namespace osero
             FindAround();
             if(Okeru)
             {
+                tran.text=TrunStateManager==TrunState.BlackTrun?"whiteTurn":"BlackTurn";
                 //子供の状態をアクティブする
                 clickedDisk.SetActive(true);
                 //黒の駒の数を１つ増やす
@@ -355,6 +354,7 @@ namespace osero
         /// </summary>
         void DiskTurnWhite()
         {
+            
              //もし白のターンで子供が非アクティブなら
             if(TrunStateManager!=TrunState.WhiteTurn||clickedDisk.activeInHierarchy)return;
 
@@ -367,6 +367,7 @@ namespace osero
             FindAround();
             if(Okeru)
             {
+                tran.text=TrunStateManager==TrunState.BlackTrun?"whiteTurn":"BlackTurn";
                 //クリックした駒を白に変更
                 clickedDisk.transform.Rotate(Kaiten);
                 //子供の状態をアクティブする
