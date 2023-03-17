@@ -120,9 +120,10 @@ namespace osero
             {
                 for(int x=0;x<8;x++)
                 {
+                    if(Disk[y,x].transform.localEulerAngles.z>=180.0f)Disk[y,x].transform.Rotate(Kaiten);//すべての駒を黒に
                     DiskStateManager[y,x]=DiskState.EMPTY;//すべての駒を空状態に
                     Disk[y,x].SetActive(false);//すべての駒を非アクティブに
-                    okerun[y,x].SetActive(false);
+                    okerun[y,x].SetActive(false);//置ける場所のマーカーを非表示に
                 }        
             }
 
@@ -166,8 +167,8 @@ namespace osero
             if(clickedGameObject==null)return;//clickedGameObjectが空
 
             if(GamePlay)GamePlay=false;//ゲームを開始
-            //クリックオブジェクトの子供の情報を取得
-            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;
+            
+            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
     
             DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
             
@@ -180,13 +181,13 @@ namespace osero
         {
             clickedGameObject = null;
     
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit = new RaycastHit();
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit = new RaycastHit();
     
-                if (Physics.Raycast(ray, out hit)) 
-                {
-                    clickedGameObject = hit.collider.gameObject;
-                }
+            if (Physics.Raycast(ray, out hit)) 
+            {
+                clickedGameObject = hit.collider.gameObject;
+            }
 
         }
 
@@ -352,8 +353,6 @@ namespace osero
         /// </summary>
         void muri(int tx,int ty)
         {           
-            //空いてるマスの周り８マスに自分の駒と同じ色しかない
-           
             for(int a=-1;a<2;a++)
             {
                 for(int b=-1;b<2;b++)
@@ -445,75 +444,40 @@ namespace osero
                         Check[g,h]=false;
                     }
                 }
-                if(SkipCheck)Debug.Log("＼(^o^)／ｵﾜﾀ");
-                else GameEnd();
+                if(!SkipCheck)GameEnd();
                 
             }
             SkipCheck=false;
         }
 
-        void skip()
+        /// <summary>
+        /// ゲームが終わった時の処理
+        /// </summary>
+        void GameEnd()
         {
-            int ok=0;
-            for(int g=0;g<8;g++)
+            if(GamePlay)return;
+            
+            int whiteCount = 0;
+            int blackCount = 0;
+
+            foreach (DiskState diskState in DiskStateManager)
             {
-                for(int h=0;h<8;h++)
+                if (diskState == DiskState.WHITE)
                 {
-                    if(Check[g,h])ok++;
+                    whiteCount++;
+                }
+                else if (diskState == DiskState.BLACK)
+                {
+                    blackCount++;
                 }
             }
-
-            if(EndCheck==true&&ok==0)
-            {
-                GameEnd();
-            }
-
-            if(ok==0)
-            {
-                TrunStateManager = TrunStateManager == TrunState.BlackTrun ? TrunState.WhiteTurn : TrunState.BlackTrun;
-                tran.text = TrunStateManager == TrunState.BlackTrun ? "BlackTurn" : "WhiteTurn";
-                EndCheck=true;   
-            }
-            else
-            {
-                EndCheck=false;
-            }
-
             
-        }
-    
-
+            Debug.Log("白が"+whiteCount);
+            Debug.Log("黒が"+blackCount);
+            Invoke("DiskPrepare", 5.0f);
+            GamePlay=true;
             
-            
-            
-            /// <summary>
-            /// ゲームが終わった時の処理
-            /// </summary>
-            void GameEnd()
-            {
-                if(!GamePlay)
-                {
-                    int whiteCount = 0;
-                    int blackCount = 0;
-    
-                    foreach (DiskState diskState in DiskStateManager)
-                    {
-                        if (diskState == DiskState.WHITE)
-                        {
-                            whiteCount++;
-                        }
-                        else if (diskState == DiskState.BLACK)
-                        {
-                            blackCount++;
-                        }
-                    }
-                    
-                    Debug.Log("白が"+whiteCount);
-                    Debug.Log("黒が"+blackCount);
-                    DiskPrepare();
-                    GamePlay=true;
-                }
-            }
         }
     }
+}
 
