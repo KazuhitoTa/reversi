@@ -5,7 +5,7 @@ using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
 using osero;
-using System;
+
 
 namespace osero
 {
@@ -50,7 +50,9 @@ namespace osero
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
         public bool SkipCheck;
-        public bool EndCheck; 
+        public bool EndCheck;
+        public List<GameObject> AIDiskTMP = new List<GameObject>();
+
 
 
         
@@ -160,17 +162,21 @@ namespace osero
         void DiskPut()
         {
             // //マウスの左ボタンを押したら 
-            if (!Input.GetMouseButtonDown(0)&&TrunStateManager != TrunState.BlackTrun)return;
+            if (Input.GetMouseButtonDown(0))
+            {
+                GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+                if(TrunStateManager == TrunState.WhiteTurn)clickedGameObject=AIDiskTMP[Random.Range ((int)0,AIDiskTMP.Count)];
 
-            GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+                if(clickedGameObject==null)return;//clickedGameObjectが空
 
-            if(clickedGameObject==null)return;//clickedGameObjectが空
-
-            if(GamePlay)GamePlay=false;//ゲームを開始
+                if(GamePlay)GamePlay=false;//ゲームを開始
             
-            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+                clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
     
-            DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+                DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+            }
+
+            
             
         }
 
@@ -424,6 +430,8 @@ namespace osero
                     if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                     if(Check[g,h])SkipCheck=true;
                     okerun[g,h].SetActive(Check[g,h]);
+                    if(Check[g,h]&&TrunStateManager == TrunState.WhiteTurn)AIDiskTMP.Add(Marker[g,h]);
+                    if(TrunStateManager == TrunState.BlackTrun)AIDiskTMP.Clear();
                     Check[g,h]=false;
                 }
             }
