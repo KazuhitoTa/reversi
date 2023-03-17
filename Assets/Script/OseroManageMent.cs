@@ -67,7 +67,6 @@ namespace osero
        
         void Update()
         {
-            muri();
             DiskPut();//オセロの駒を置く
             GameEnd();//ゲームが終わった時の処理
         }
@@ -163,13 +162,17 @@ namespace osero
                     }
                 }
             }
+            muri();
+            for(int g=0;g<8;g++)
+                {
+                    for(int h=0;h<8;h++)
+                    {
+                        okerun[g,h].SetActive(Check[g,h]);
+                        Check[g,h]=false;
+                    }
+                }
         }
 
-        void Link(bool CL)
-        {
-            ClickLink=CL;
-            Debug.Log(CL);
-        }
         
         /// <summary>
         /// オセロの駒を置く
@@ -189,8 +192,7 @@ namespace osero
             GamePlay=false;//ゲームを開始
             //クリックオブジェクトの子供の情報を取得
             clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;
-            // if(TrunStateManager == TrunState.BlackTrun)DiskTurn(DiskState.BLACK);
-            // else DiskTurn(DiskState.WHITE);
+    
             DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
             
         }
@@ -352,6 +354,15 @@ namespace osero
                     //クリックした駒を白に変更
                     clickedDisk.transform.Rotate(Kaiten);
                 }
+                
+                //子供の状態をアクティブする
+                clickedDisk.SetActive(true);
+                //空の駒の数を１つ減らす
+                EmptyCount--;
+                //ターンを切り替える
+                TrunStateManager = state == DiskState.BLACK ? TrunState.WhiteTurn : TrunState.BlackTrun;
+                Okeru = false;
+                muri();
                 for(int g=0;g<8;g++)
                 {
                     for(int h=0;h<8;h++)
@@ -360,13 +371,6 @@ namespace osero
                         Check[g,h]=false;
                     }
                 }
-                //子供の状態をアクティブする
-                clickedDisk.SetActive(true);
-                //空の駒の数を１つ減らす
-                EmptyCount--;
-                //ターンを切り替える
-                TrunStateManager = state == DiskState.BLACK ? TrunState.WhiteTurn : TrunState.BlackTrun;
-                Okeru = false;
             }
             else
             {
@@ -379,9 +383,6 @@ namespace osero
         /// </summary>
         void muri()
         {            
-            //空いてるマスの周り８マスに自分の駒と同じ色しかない
-            // 
-            //空いてるマスの周り８マスに自分の駒と同じ色しかない
             //空いてるマスの周り８マスに自分の駒と同じ色しかない
             for(int g=0;g<8;g++)
             {
@@ -411,10 +412,12 @@ namespace osero
             
                                 //同じく書くのがめんどいから
                                 DiskState diskState=DiskStateManager[x, y];
-                                DiskState putDiskState=TrunStateManager == TrunState.BlackTrun?DiskState.BLACK:DiskState.WHITE;
+                                DiskState checkDiskState=TrunStateManager == TrunState.BlackTrun?DiskState.BLACK:DiskState.WHITE;
+                                Debug.Log(diskState);
+                                Debug.Log(checkDiskState);
             
                                 //置いたコマの状態が同じか空なら次に
-                                if (diskState == putDiskState || diskState == DiskState.EMPTY)
+                                if (diskState == checkDiskState || diskState == DiskState.EMPTY)
                                 {
                                     continue;
                                 }
@@ -439,7 +442,7 @@ namespace osero
                                         break;
                                     }
             
-                                    if (diskState == putDiskState)
+                                    if (diskState == checkDiskState)
                                     {
                                         Check[g,h]=true;
             
@@ -451,9 +454,28 @@ namespace osero
                     }
             
                 }
+            }    
+        }
+
+        void skip()
+        {
+            int ok=0;
+            for(int g=0;g<8;g++)
+            {
+                for(int h=0;h<8;h++)
+                {
+                    if(Check[g,h])ok++;
+                }
             }
-            
-                    }
+            if(ok==0)
+            {
+                TrunStateManager = TrunStateManager == TrunState.BlackTrun ? TrunState.WhiteTurn : TrunState.BlackTrun;
+                tran.text = TrunStateManager == TrunState.BlackTrun ? "BlackTurn" : "WhiteTurn";
+                
+            }
+        }
+    
+
             
             
             

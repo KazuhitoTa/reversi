@@ -1560,8 +1560,6 @@ GameObject:
   m_Component:
   - component: {fileID: 782476646}
   - component: {fileID: 782476645}
-  - component: {fileID: 782476647}
-  - component: {fileID: 782476648}
   m_Layer: 0
   m_Name: OseroManger
   m_TagString: Untagged
@@ -1587,7 +1585,7 @@ MonoBehaviour:
   WhiteCount: 0
   Kaiten: {x: 0, y: 0, z: 180}
   MarkerManger: {fileID: 690404379}
-  TrunStateManager: 1
+  TrunStateManager: 0
   PutDisktmp1: 0
   PutDisktmp2: 0
   clickedDisk: {fileID: 0}
@@ -1614,40 +1612,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &782476647
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 782476644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a876d450a75363a44afd2d1d193979da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &782476648
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 782476644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 1
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &788253688
 GameObject:
   m_ObjectHideFlags: 0
