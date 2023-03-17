@@ -160,7 +160,7 @@ namespace osero
         void DiskPut()
         {
             // //マウスの左ボタンを押したら 
-            if (!Input.GetMouseButtonDown(0))return;
+            if (!Input.GetMouseButtonDown(0)&&TrunStateManager != TrunState.BlackTrun)return;
 
             GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
 
