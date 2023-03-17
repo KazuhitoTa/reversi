@@ -11,7 +11,6 @@ namespace osero
 {
     public class OseroManageMent : MonoBehaviourPunCallbacks
     {
-        ExitGames.Client.Photon.Hashtable roomHash;
         public GameObject DiskPre;//オセロの駒のプレハブ
         public int EmptyCount;//どちらも駒をおいていない場所の数
         public int BlackCount;//黒の駒の数
@@ -47,11 +46,11 @@ namespace osero
         public bool PutOK;
         public bool Okeru;
         public TextMeshProUGUI tran;
-        public bool ClickLink;
         public bool[,] Check=new bool[8,8];
-
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
+        public bool SkipCheck;
+        public bool EndCheck; 
 
 
         
@@ -68,7 +67,6 @@ namespace osero
         void Update()
         {
             DiskPut();//オセロの駒を置く
-            GameEnd();//ゲームが終わった時の処理
         }
         
         
@@ -90,20 +88,7 @@ namespace osero
                 }
             }
         }
-        public void test()
-        {
-            int g=0;
-            for(int y=0;y<8;y++)
-            {
-                for(int x=0;x<8;x++)
-                {
-                    Disk[y,x]=GameObject.FindGameObjectsWithTag("Disk")[g];
-                    Disk[y,x].transform.parent=Marker[y,x].transform;
-                    g+=1;
-                }        
-             }        
-        }
-
+        
         /// <summary>
         /// ディスクを配置する
         /// </summary>
@@ -126,6 +111,8 @@ namespace osero
         /// </summary>
         public void DiskPrepare()
         {
+            EndCheck=false;
+            SkipCheck=false;
             WhiteCount=2;//白の数を初期化
             BlackCount=2;//黒の数を初期化
             EmptyCount=60;//空の数を初期化
@@ -162,34 +149,23 @@ namespace osero
                     }
                 }
             }
-            muri();
-            for(int g=0;g<8;g++)
-                {
-                    for(int h=0;h<8;h++)
-                    {
-                        okerun[g,h].SetActive(Check[g,h]);
-                        Check[g,h]=false;
-                    }
-                }
+            muritest();
         }
 
         
         /// <summary>
         /// オセロの駒を置く
         /// </summary>
-        
-        
         void DiskPut()
         {
             // //マウスの左ボタンを押したら 
             if (!Input.GetMouseButtonDown(0))return;
-            
-          
+
             GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
 
             if(clickedGameObject==null)return;//clickedGameObjectが空
 
-            GamePlay=false;//ゲームを開始
+            if(GamePlay)GamePlay=false;//ゲームを開始
             //クリックオブジェクトの子供の情報を取得
             clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;
     
@@ -361,16 +337,9 @@ namespace osero
                 EmptyCount--;
                 //ターンを切り替える
                 TrunStateManager = state == DiskState.BLACK ? TrunState.WhiteTurn : TrunState.BlackTrun;
+                muritest();//置ける場所どこ？
+            
                 Okeru = false;
-                muri();
-                for(int g=0;g<8;g++)
-                {
-                    for(int h=0;h<8;h++)
-                    {
-                        okerun[g,h].SetActive(Check[g,h]);
-                        Check[g,h]=false;
-                    }
-                }
             }
             else
             {
@@ -381,80 +350,106 @@ namespace osero
         /// <summary>
         /// 駒がおけないときの処理
         /// </summary>
-        void muri()
-        {            
+        void muri(int tx,int ty)
+        {           
             //空いてるマスの周り８マスに自分の駒と同じ色しかない
+           
+            for(int a=-1;a<2;a++)
+            {
+                for(int b=-1;b<2;b++)
+                {
+                    //もし今置いたコマなら次に
+                    if (a == 0 && b == 0)
+                    {
+                        continue;
+                    }
+
+                    //書くのがめんどくさいから置いたマスの横をｘ縦をｙと置く
+                    int x = a + tx;
+                    int y = b + ty;
+
+                    //枠外からはみ出てたら次に
+                    if (x < 0 || x > 7 || y < 0 || y > 7)
+                    {
+                        continue;
+                    }
+
+                    //同じく書くのがめんどいから
+                    DiskState diskState=DiskStateManager[x, y];
+                    DiskState checkDiskState=TrunStateManager == TrunState.BlackTrun?DiskState.BLACK:DiskState.WHITE;
+                    
+
+                    //置いたコマの状態が同じか空なら次に
+                    if (diskState == checkDiskState || diskState == DiskState.EMPTY)
+                    {
+                        continue;
+                    }
+
+                    int dx = a;
+                    int dy = b;
+
+                    while (true)
+                    {
+                        x += dx;
+                        y += dy;
+
+                        if (x < 0 || x > 7 || y < 0 || y > 7)
+                        {
+                            break;
+                        }
+
+                        diskState = DiskStateManager[x, y];
+
+                        if (diskState == DiskState.EMPTY)
+                        {
+                            break;
+                        }
+
+                        if (diskState == checkDiskState)
+                        {
+                            Check[tx,ty]=true;
+
+                            break;
+                        }
+                    }
+                }
+            }    
+        }
+
+        void muritest()
+        {
             for(int g=0;g<8;g++)
             {
                 for(int h=0;h<8;h++)
                 {
-                    if(DiskStateManager[g, h]==DiskState.EMPTY)
-                    {
-                        for(int a=-1;a<2;a++)
-                        {
-                            for(int b=-1;b<2;b++)
-                            {
-                                //もし今置いたコマなら次に
-                                if (a == 0 && b == 0)
-                                {
-                                    continue;
-                                }
-            
-                                //書くのがめんどくさいから置いたマスの横をｘ縦をｙと置く
-                                int x = a + g;
-                                int y = b + h;
-            
-                                //枠外からはみ出てたら次に
-                                if (x < 0 || x > 7 || y < 0 || y > 7)
-                                {
-                                    continue;
-                                }
-            
-                                //同じく書くのがめんどいから
-                                DiskState diskState=DiskStateManager[x, y];
-                                DiskState checkDiskState=TrunStateManager == TrunState.BlackTrun?DiskState.BLACK:DiskState.WHITE;
-                                Debug.Log(diskState);
-                                Debug.Log(checkDiskState);
-            
-                                //置いたコマの状態が同じか空なら次に
-                                if (diskState == checkDiskState || diskState == DiskState.EMPTY)
-                                {
-                                    continue;
-                                }
-            
-                                int dx = a;
-                                int dy = b;
-            
-                                while (true)
-                                {
-                                    x += dx;
-                                    y += dy;
-            
-                                    if (x < 0 || x > 7 || y < 0 || y > 7)
-                                    {
-                                        break;
-                                    }
-            
-                                    diskState = DiskStateManager[x, y];
-            
-                                    if (diskState == DiskState.EMPTY)
-                                    {
-                                        break;
-                                    }
-            
-                                    if (diskState == checkDiskState)
-                                    {
-                                        Check[g,h]=true;
-            
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-            
+                    if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
+                    if(Check[g,h])SkipCheck=true;
+                    okerun[g,h].SetActive(Check[g,h]);
+                    Check[g,h]=false;
                 }
-            }    
+            }
+            
+            if(!SkipCheck)
+            {
+                TrunStateManager = TrunStateManager == TrunState.BlackTrun ? TrunState.WhiteTurn : TrunState.BlackTrun;
+                tran.text = TrunStateManager == TrunState.BlackTrun ? "BlackTurn" : "WhiteTurn";
+                EndCheck=true;
+                
+                for(int g=0;g<8;g++)
+                {
+                    for(int h=0;h<8;h++)
+                    {
+                        if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
+                        if(Check[g,h])SkipCheck=true;
+                        okerun[g,h].SetActive(Check[g,h]);
+                        Check[g,h]=false;
+                    }
+                }
+                if(SkipCheck)Debug.Log("＼(^o^)／ｵﾜﾀ");
+                else GameEnd();
+                
+            }
+            SkipCheck=false;
         }
 
         void skip()
@@ -467,47 +462,58 @@ namespace osero
                     if(Check[g,h])ok++;
                 }
             }
+
+            if(EndCheck==true&&ok==0)
+            {
+                GameEnd();
+            }
+
             if(ok==0)
             {
                 TrunStateManager = TrunStateManager == TrunState.BlackTrun ? TrunState.WhiteTurn : TrunState.BlackTrun;
                 tran.text = TrunStateManager == TrunState.BlackTrun ? "BlackTurn" : "WhiteTurn";
-                
+                EndCheck=true;   
             }
+            else
+            {
+                EndCheck=false;
+            }
+
+            
         }
     
 
             
             
             
-                    /// <summary>
-                    /// ゲームが終わった時の処理
-                    /// </summary>
-                    void GameEnd()
+            /// <summary>
+            /// ゲームが終わった時の処理
+            /// </summary>
+            void GameEnd()
+            {
+                if(!GamePlay)
+                {
+                    int whiteCount = 0;
+                    int blackCount = 0;
+    
+                    foreach (DiskState diskState in DiskStateManager)
                     {
-                        if(EmptyCount==0&&!GamePlay)
+                        if (diskState == DiskState.WHITE)
                         {
-                        
-                            int whiteCount = 0;
-                            int blackCount = 0;
-            
-                            foreach (DiskState diskState in DiskStateManager)
-                            {
-                                if (diskState == DiskState.WHITE)
-                                {
-                                    whiteCount++;
-                                }
-                                else if (diskState == DiskState.BLACK)
-                                {
-                                    blackCount++;
-                                }
-                            }
-                            
-                            Debug.Log("白が"+whiteCount);
-                            Debug.Log("黒が"+blackCount);
-                            DiskPrepare();
-                            GamePlay=true;
+                            whiteCount++;
+                        }
+                        else if (diskState == DiskState.BLACK)
+                        {
+                            blackCount++;
                         }
                     }
+                    
+                    Debug.Log("白が"+whiteCount);
+                    Debug.Log("黒が"+blackCount);
+                    DiskPrepare();
+                    GamePlay=true;
                 }
             }
+        }
+    }
 
