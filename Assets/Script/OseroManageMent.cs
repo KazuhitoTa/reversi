@@ -52,6 +52,8 @@ namespace osero
         public bool SkipCheck;
         public bool EndCheck;
         public List<GameObject> AIDiskTMP = new List<GameObject>();
+        public List<int> AIDisktmp1 = new List<int>();
+        public List<int> AIDisktmp2 = new List<int>();
 
 
 
@@ -456,6 +458,14 @@ namespace osero
                         if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                         if(Check[g,h])SkipCheck=true;
                         okerun[g,h].SetActive(Check[g,h]);
+                        if(Check[g,h]&&TrunStateManager == TrunState.WhiteTurn)
+                        {
+                            AIDiskTMP.Add(Marker[g,h]);
+                        }
+                        if(TrunStateManager == TrunState.BlackTrun)
+                        {
+                            AIDiskTMP.Clear();
+                        }
                         Check[g,h]=false;
                     }
                 }
@@ -464,6 +474,16 @@ namespace osero
             }
             SkipCheck=false;
         }
+
+        /// <summary>
+        /// 次の相手のターンの置ける場所が最小になるような位置に打つ
+        /// </summary>
+        void AImin()
+        {
+            
+        }
+
+        
 
         /// <summary>
         /// ゲームが終わった時の処理
