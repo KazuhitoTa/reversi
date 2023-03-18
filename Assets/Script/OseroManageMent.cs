@@ -118,6 +118,8 @@ namespace osero
             WhiteCount=2;//白の数を初期化
             BlackCount=2;//黒の数を初期化
             EmptyCount=60;//空の数を初期化
+            TrunStateManager = TrunState.BlackTrun;
+            tran.text="BlackTurn";
             for(int y=0;y<8;y++)
             {
                 for(int x=0;x<8;x++)
@@ -161,11 +163,19 @@ namespace osero
         /// </summary>
         void DiskPut()
         {
+            if(TrunStateManager == TrunState.WhiteTurn&&AIDiskTMP.Count!=0)
+            {
+                clickedGameObject=AIDiskTMP[Random.Range ((int)0,AIDiskTMP.Count)];
+
+                clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+    
+                DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+            }
+
             // //マウスの左ボタンを押したら 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0)&&TrunStateManager == TrunState.BlackTrun)
             {
                 GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
-                if(TrunStateManager == TrunState.WhiteTurn)clickedGameObject=AIDiskTMP[Random.Range ((int)0,AIDiskTMP.Count)];
 
                 if(clickedGameObject==null)return;//clickedGameObjectが空
 
@@ -174,10 +184,7 @@ namespace osero
                 clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
     
                 DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
-            }
-
-            
-            
+            }    
         }
 
         /// <summary>
