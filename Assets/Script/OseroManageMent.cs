@@ -4,8 +4,8 @@ using UnityEngine;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
-using osero;
-using System;
+
+
 
 namespace osero
 {
@@ -50,11 +50,7 @@ namespace osero
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
         public bool SkipCheck;
-        public bool EndCheck; 
-
-
-        
-        
+        public bool EndCheck;     
 
         void Awake()
         {
@@ -68,9 +64,6 @@ namespace osero
         {
             DiskPut();//オセロの駒を置く
         }
-        
-        
-
         
         /// <summary>
         /// マーカーのTransfromポジションを取得する
@@ -159,19 +152,25 @@ namespace osero
         /// </summary>
         void DiskPut()
         {
-            // //マウスの左ボタンを押したら 
-            if (!Input.GetMouseButtonDown(0))return;
-
-            GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
-
-            if(clickedGameObject==null)return;//clickedGameObjectが空
-
-            if(GamePlay)GamePlay=false;//ゲームを開始
             
-            clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+            //マウスの左ボタンを押したら 
+            if (Input.GetMouseButtonDown(0))
+            {
+                if(GamePlay)GamePlay=false;//ゲームを開始
+                GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+                SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
+            }
+            
+            if(clickedGameObject!=null)
+            {
+                clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+                DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+                clickedGameObject=null;
+            }//clickedGameObjectが空
+
+                
+                
     
-            DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
-            
         }
 
         /// <summary>
@@ -477,6 +476,30 @@ namespace osero
             Invoke("DiskPrepare", 5.0f);
             GamePlay=true;
             
+        }
+
+        //プレイヤーがディスクをクリックしたとき
+        void SendPlayerClickObject()
+        {
+            if (clickedGameObject != null)
+            {
+                int clickObjID = clickedGameObject.GetComponent<PhotonView>().ViewID;
+                photonView.RPC(nameof(RPCReciveObj), RpcTarget.Others, clickObjID);
+            }     
+        }
+
+        [PunRPC]
+        void RPCReciveObj(int clickObjID)
+        {
+            GameObject clickObj = PhotonView.Find(clickObjID).gameObject;
+            if (clickObj != null)
+            {
+                clickedGameObject=clickObj;
+            }
+            else
+            {
+                Debug.LogError("GameObject not found for ID: " + clickObjID);
+            }
         }
     }
 }
