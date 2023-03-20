@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
-using osero;
+
 
 
 namespace osero
@@ -28,6 +28,7 @@ namespace osero
             BlackTrun,//黒のターン
             WhiteTurn//白のターン
         };
+
         public Vector3 Kaiten=new Vector3(0,0,180);//回転
         public GameObject MarkerManger;//マーカーの親オブジェクト
         public Transform[,] MarkerPos=new Transform[8,8];//マーカーのポジションを保持
@@ -67,14 +68,10 @@ namespace osero
             DiskPrepare();//ディスクを初期化する
         }
         
-        
         void Update()
         {
             DiskPut();//オセロの駒を置く
         }
-        
-        
-
         
         /// <summary>
         /// マーカーのTransfromポジションを取得する
