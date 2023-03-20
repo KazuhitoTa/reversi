@@ -67,7 +67,7 @@ namespace osero
             DiskPrepare();//ディスクを初期化する
         }
         
-       
+        
         void Update()
         {
             DiskPut();//オセロの駒を置く
