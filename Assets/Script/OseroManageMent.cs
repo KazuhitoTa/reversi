@@ -46,6 +46,7 @@ namespace osero
         public bool PutOK;
         public bool Okeru;
         public TextMeshProUGUI tran;
+        public TextMeshProUGUI whatColorPlayer;
         public bool[,] Check=new bool[8,8];
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
@@ -57,12 +58,18 @@ namespace osero
             MarkerSetUp();//マーカーのポジションを取得
             DiskInstantiate();//ディスクを生成する
             DiskPrepare();//ディスクを初期化する
+            FirstOrSecond();
         }
         
        
         void Update()
         {
             DiskPut();//オセロの駒を置く
+        }
+
+        public void FirstOrSecond()
+        {
+            whatColorPlayer.text=PhotonNetwork.IsMasterClient?"I'm Black":"I'm White";
         }
         
         /// <summary>
@@ -151,26 +158,35 @@ namespace osero
         /// オセロの駒を置く
         /// </summary>
         void DiskPut()
-        {
-            
-            //マウスの左ボタンを押したら 
-            if (Input.GetMouseButtonDown(0))
+        { 
+            if(TrunStateManager == TrunState.BlackTrun&&PhotonNetwork.IsMasterClient)
             {
-                if(GamePlay)GamePlay=false;//ゲームを開始
-                GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
-                SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
+                //マウスの左ボタンを押したら 
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if(GamePlay)GamePlay=false;//ゲームを開始
+                    GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+                    SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
+                }
             }
-            
+            if(TrunStateManager == TrunState.WhiteTurn&&!PhotonNetwork.IsMasterClient)
+            {
+                //マウスの左ボタンを押したら 
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if(GamePlay)GamePlay=false;//ゲームを開始
+                    GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+                    SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
+                }
+                            
+            }
             if(clickedGameObject!=null)
             {
                 clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
                 DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
                 clickedGameObject=null;
             }//clickedGameObjectが空
-
-                
-                
-    
+            
         }
 
         /// <summary>
