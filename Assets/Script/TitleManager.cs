@@ -20,7 +20,7 @@ public class TitleManager : MonoBehaviour
         GameDateManager.Instance.InCPUBattle=true;
         
         onStart=true;
-        SceneManager.LoadScene("CPU");
+        SceneManager.LoadScene("Game");
 
     }
 }

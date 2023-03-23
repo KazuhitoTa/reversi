@@ -2157,6 +2157,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 782476646}
+  - component: {fileID: 782476648}
   - component: {fileID: 782476645}
   - component: {fileID: 782476647}
   m_Layer: 0
@@ -2235,6 +2236,40 @@ MonoBehaviour:
   sceneViewId: 65
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &782476648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782476644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1abeecc79aabab4ab3072fe923505a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DiskPre: {fileID: 422871272567347376, guid: 03c5fb0f6d1430a49943c3d9e749d7bd, type: 3}
+  EmptyCount: 0
+  BlackCount: 0
+  WhiteCount: 0
+  Kaiten: {x: 0, y: 0, z: 180}
+  MarkerManger: {fileID: 690404379}
+  TrunStateManager: 0
+  PutDisktmp1: 0
+  PutDisktmp2: 0
+  clickedDisk: {fileID: 0}
+  ReverseDisk: []
+  ReverseDisktmp1: 
+  ReverseDisktmp2: 
+  PutOK: 0
+  Okeru: 0
+  tran: {fileID: 1187278512}
+  okerunPre: {fileID: 20098864098483616, guid: 6af83bb3e93448a44939bfa3aaf9eceb, type: 3}
+  SkipCheck: 0
+  EndCheck: 0
+  AIDiskTMP: []
+  AIDisktmp1: 
+  AIDisktmp2: 
 --- !u!1 &782628375
 GameObject:
   m_ObjectHideFlags: 0

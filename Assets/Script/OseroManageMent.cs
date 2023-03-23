@@ -56,13 +56,17 @@ namespace osero
 
         void Awake()
         {
+            var OnlineScript = GetComponent<OseroManageMent>();
+            if(!GameDateManager.Instance.InOnlineBattle)OnlineScript.enabled=false;
+        }
+        
+        void Start()
+        {
             MarkerSetUp();//マーカーのポジションを取得
             DiskInstantiate();//ディスクを生成する
             DiskPrepare();//ディスクを初期化する
             FirstOrSecond();//どちらがどの色の駒を使うか判断する
         }
-        
-       
         void Update()
         {
             DiskPut();//オセロの駒を置く

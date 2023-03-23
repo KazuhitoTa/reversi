@@ -9,7 +9,7 @@ using Photon.Realtime;
 
 namespace osero
 {
-    public class CPUOseroManager : MonoBehaviourPunCallbacks
+    public class CPUOseroManager : MonoBehaviour
     {
         public GameObject DiskPre;//オセロの駒のプレハブ
         public int EmptyCount;//どちらも駒をおいていない場所の数
@@ -56,12 +56,12 @@ namespace osero
         public List<int> AIDisktmp1 = new List<int>();
         public List<int> AIDisktmp2 = new List<int>();
 
-
-
-        
-        
-
         void Awake()
+        {
+            var CPUScript = GetComponent<CPUOseroManager>();
+            if(!GameDateManager.Instance.InCPUBattle)CPUScript.enabled=false;
+        }
+        void Start()
         {
             MarkerSetUp();//マーカーのポジションを取得
             DiskInstantiate();//ディスクを生成する
