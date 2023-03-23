@@ -9,7 +9,7 @@ using Photon.Realtime;
 
 namespace osero
 {
-    public class OseroManageMent : MonoBehaviourPunCallbacks
+    public class CPUOseroManager : MonoBehaviourPunCallbacks
     {
         public GameObject DiskPre;//オセロの駒のプレハブ
         public int EmptyCount;//どちらも駒をおいていない場所の数
@@ -28,6 +28,7 @@ namespace osero
             BlackTrun,//黒のターン
             WhiteTurn//白のターン
         };
+
         public Vector3 Kaiten=new Vector3(0,0,180);//回転
         public GameObject MarkerManger;//マーカーの親オブジェクト
         public Transform[,] MarkerPos=new Transform[8,8];//マーカーのポジションを保持
@@ -43,35 +44,33 @@ namespace osero
         public List<GameObject> ReverseDisk = new List<GameObject>();
         public List<int> ReverseDisktmp1 = new List<int>();
         public List<int> ReverseDisktmp2 = new List<int>();
-        
         public bool PutOK;
         public bool Okeru;
         public TextMeshProUGUI tran;
-        public TextMeshProUGUI whatColorPlayer;
         public bool[,] Check=new bool[8,8];
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
         public bool SkipCheck;
-        public bool EndCheck;     
+        public bool EndCheck;
+        public List<GameObject> AIDiskTMP = new List<GameObject>();
+        public List<int> AIDisktmp1 = new List<int>();
+        public List<int> AIDisktmp2 = new List<int>();
+
+
+
+        
+        
 
         void Awake()
         {
             MarkerSetUp();//マーカーのポジションを取得
             DiskInstantiate();//ディスクを生成する
             DiskPrepare();//ディスクを初期化する
-            FirstOrSecond();//どちらがどの色の駒を使うか判断する
         }
         
-       
         void Update()
         {
             DiskPut();//オセロの駒を置く
-        }
-
-        public void FirstOrSecond()
-        {
-            //
-            whatColorPlayer.text=PhotonNetwork.IsMasterClient?"I'm Black":"I'm White";
         }
         
         /// <summary>
@@ -79,15 +78,15 @@ namespace osero
         /// </summary>
         public void MarkerSetUp()
         {
-            
-            int a = 0;
-            foreach (Transform childTransform in MarkerManger.transform)
+            int a=0;
+            for(int y=0;y<8;y++)
             {
-                int y = a / 8;
-                int x = a % 8;
-                Marker[y, x] = childTransform.gameObject;
-                MarkerPos[y, x] = childTransform;
-                a++;
+                for(int i=0;i<8;i++)
+                {
+                    Marker[y,i]=MarkerManger.transform.GetChild(a).gameObject;
+                    MarkerPos[y,i]=MarkerManger.transform.GetChild(a).transform;
+                    a+=1; 
+                }
             }
         }
         
@@ -118,6 +117,8 @@ namespace osero
             WhiteCount=2;//白の数を初期化
             BlackCount=2;//黒の数を初期化
             EmptyCount=60;//空の数を初期化
+            TrunStateManager = TrunState.BlackTrun;
+            tran.text="BlackTurn";
             for(int y=0;y<8;y++)
             {
                 for(int x=0;x<8;x++)
@@ -160,35 +161,29 @@ namespace osero
         /// オセロの駒を置く
         /// </summary>
         void DiskPut()
-        { 
-            if(TrunStateManager == TrunState.BlackTrun&&PhotonNetwork.IsMasterClient)
+        {
+            if(TrunStateManager == TrunState.WhiteTurn&&AIDiskTMP.Count!=0)
             {
-                //マウスの左ボタンを押したら 
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if(GamePlay)GamePlay=false;//ゲームを開始
-                    GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
-                    SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
-                }
-            }
-            if(TrunStateManager == TrunState.WhiteTurn&&!PhotonNetwork.IsMasterClient)
-            {
-                //マウスの左ボタンを押したら 
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if(GamePlay)GamePlay=false;//ゲームを開始
-                    GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
-                    SendPlayerClickObject();//相手に自分の押したオブジェクトを送る
-                }
-                            
-            }
-            if(clickedGameObject!=null)
-            {
+                clickedGameObject=AIDiskTMP[Random.Range ((int)0,AIDiskTMP.Count)];
+
                 clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+    
                 DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
-                clickedGameObject=null;
-            }//clickedGameObjectが空
+            }
+
+            // //マウスの左ボタンを押したら 
+            if (Input.GetMouseButtonDown(0)&&TrunStateManager == TrunState.BlackTrun)
+            {
+                GetClickObj();//クリックしたオブジェクトをclickedGameObjectに入れる
+
+                if(clickedGameObject==null)return;//clickedGameObjectが空
+
+                if(GamePlay)GamePlay=false;//ゲームを開始
             
+                clickedDisk=clickedGameObject.transform.GetChild(0).gameObject;//クリックオブジェクトの子供の情報を取得
+    
+                DiskTurn(TrunStateManager == TrunState.BlackTrun ? DiskState.BLACK : DiskState.WHITE);
+            }    
         }
 
         /// <summary>
@@ -325,11 +320,7 @@ namespace osero
             }
         }
 
-
-        /// <summary>
-        /// ディスクを返す処理
-        /// </summary>
-        /// <param name="state">どっちのターンでディスクがクリックされたか</param>
+        
         void DiskTurn(DiskState state)
         {
             //もし状態に合わせてターンが異なる、または子供が非アクティブなら
@@ -436,22 +427,17 @@ namespace osero
             }    
         }
 
-
-        /// <summary>
-        /// 置けるかどうか確認するクラス
-        /// </summary>
         void muritest()
         {
-            bool Black=TrunStateManager == TrunState.BlackTrun && PhotonNetwork.IsMasterClient;
-            bool White = TrunStateManager == TrunState.WhiteTurn && !PhotonNetwork.IsMasterClient;
-
             for(int g=0;g<8;g++)
             {
                 for(int h=0;h<8;h++)
                 {
                     if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                     if(Check[g,h])SkipCheck=true;
-                    okerun[g, h].SetActive(Black || White ? Check[g, h] : false);
+                    okerun[g,h].SetActive(Check[g,h]);
+                    if(Check[g,h]&&TrunStateManager == TrunState.WhiteTurn)AIDiskTMP.Add(Marker[g,h]);
+                    if(TrunStateManager == TrunState.BlackTrun)AIDiskTMP.Clear();
                     Check[g,h]=false;
                 }
             }
@@ -468,7 +454,15 @@ namespace osero
                     {
                         if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                         if(Check[g,h])SkipCheck=true;
-                        okerun[g, h].SetActive(Black || White ? Check[g, h] : false);
+                        okerun[g,h].SetActive(Check[g,h]);
+                        if(Check[g,h]&&TrunStateManager == TrunState.WhiteTurn)
+                        {
+                            AIDiskTMP.Add(Marker[g,h]);
+                        }
+                        if(TrunStateManager == TrunState.BlackTrun)
+                        {
+                            AIDiskTMP.Clear();
+                        }
                         Check[g,h]=false;
                     }
                 }
@@ -477,6 +471,16 @@ namespace osero
             }
             SkipCheck=false;
         }
+
+        /// <summary>
+        /// 次の相手のターンの置ける場所が最小になるような位置に打つ
+        /// </summary>
+        void AImin()
+        {
+            
+        }
+
+        
 
         /// <summary>
         /// ゲームが終わった時の処理
@@ -505,32 +509,6 @@ namespace osero
             Invoke("DiskPrepare", 5.0f);
             GamePlay=true;
             
-        }
-
-        /// <summary>
-        /// クリックしたディスクが何か相手に送る
-        /// </summary>
-        void SendPlayerClickObject()
-        {
-            if (clickedGameObject != null)
-            {
-                int clickObjID = clickedGameObject.GetComponent<PhotonView>().ViewID;
-                photonView.RPC(nameof(RPCReciveObj), RpcTarget.Others, clickObjID);
-            }     
-        }
-       
-        [PunRPC]
-        void RPCReciveObj(int clickObjID)
-        {
-            GameObject clickObj = PhotonView.Find(clickObjID).gameObject;
-            if (clickObj != null)
-            {
-                clickedGameObject=clickObj;
-            }
-            else
-            {
-                Debug.LogError("GameObject not found for ID: " + clickObjID);
-            }
         }
     }
 }
