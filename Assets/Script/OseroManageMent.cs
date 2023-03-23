@@ -43,6 +43,7 @@ namespace osero
         public List<GameObject> ReverseDisk = new List<GameObject>();
         public List<int> ReverseDisktmp1 = new List<int>();
         public List<int> ReverseDisktmp2 = new List<int>();
+        
         public bool PutOK;
         public bool Okeru;
         public TextMeshProUGUI tran;
@@ -58,7 +59,7 @@ namespace osero
             MarkerSetUp();//マーカーのポジションを取得
             DiskInstantiate();//ディスクを生成する
             DiskPrepare();//ディスクを初期化する
-            FirstOrSecond();
+            FirstOrSecond();//どちらがどの色の駒を使うか判断する
         }
         
        
@@ -69,6 +70,7 @@ namespace osero
 
         public void FirstOrSecond()
         {
+            //
             whatColorPlayer.text=PhotonNetwork.IsMasterClient?"I'm Black":"I'm White";
         }
         
@@ -77,7 +79,7 @@ namespace osero
         /// </summary>
         public void MarkerSetUp()
         {
-            int a=0;
+            /*int a=0;
             for(int y=0;y<8;y++)
             {
                 for(int i=0;i<8;i++)
@@ -86,6 +88,15 @@ namespace osero
                     MarkerPos[y,i]=MarkerManger.transform.GetChild(a).transform;
                     a+=1; 
                 }
+            }*/
+            int a = 0;
+            foreach (Transform childTransform in MarkerManger.transform)
+            {
+                int y = a / 8;
+                int x = a % 8;
+                Marker[y, x] = childTransform.gameObject;
+                MarkerPos[y, x] = childTransform;
+                a++;
             }
         }
         
@@ -323,7 +334,11 @@ namespace osero
             }
         }
 
-        
+
+        /// <summary>
+        /// ディスクを返す処理
+        /// </summary>
+        /// <param name="state">どっちのターンでディスクがクリックされたか</param>
         void DiskTurn(DiskState state)
         {
             //もし状態に合わせてターンが異なる、または子供が非アクティブなら
@@ -430,15 +445,22 @@ namespace osero
             }    
         }
 
+
+        /// <summary>
+        /// 置けるかどうか確認するクラス
+        /// </summary>
         void muritest()
         {
+            bool Black=TrunStateManager == TrunState.BlackTrun && PhotonNetwork.IsMasterClient;
+            bool White = TrunStateManager == TrunState.WhiteTurn && !PhotonNetwork.IsMasterClient;
+
             for(int g=0;g<8;g++)
             {
                 for(int h=0;h<8;h++)
                 {
                     if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                     if(Check[g,h])SkipCheck=true;
-                    okerun[g,h].SetActive(Check[g,h]);
+                    okerun[g, h].SetActive(Black || White ? Check[g, h] : false);
                     Check[g,h]=false;
                 }
             }
@@ -455,7 +477,7 @@ namespace osero
                     {
                         if(DiskStateManager[g, h]==DiskState.EMPTY)muri(g,h);
                         if(Check[g,h])SkipCheck=true;
-                        okerun[g,h].SetActive(Check[g,h]);
+                        okerun[g, h].SetActive(Black || White ? Check[g, h] : false);
                         Check[g,h]=false;
                     }
                 }
@@ -494,7 +516,9 @@ namespace osero
             
         }
 
-        //プレイヤーがディスクをクリックしたとき
+        /// <summary>
+        /// クリックしたディスクが何か相手に送る
+        /// </summary>
         void SendPlayerClickObject()
         {
             if (clickedGameObject != null)
@@ -503,7 +527,7 @@ namespace osero
                 photonView.RPC(nameof(RPCReciveObj), RpcTarget.Others, clickObjID);
             }     
         }
-
+       
         [PunRPC]
         void RPCReciveObj(int clickObjID)
         {

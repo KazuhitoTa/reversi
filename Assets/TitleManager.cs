@@ -14,4 +14,13 @@ public class TitleManager : MonoBehaviour
         SceneManager.LoadScene("Online");
 
     }
+    public void CPUStartBotton()
+    {
+        if(onStart)return;
+        GameDateManager.Instance.InCPUBattle=true;
+        
+        onStart=true;
+        SceneManager.LoadScene("Online");
+
+    }
 }

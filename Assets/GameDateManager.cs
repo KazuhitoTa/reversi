@@ -6,6 +6,7 @@ public class GameDateManager : MonoBehaviour
 {
     //オンライン戦かどうか
     public bool InOnlineBattle{get;set;}
+    public bool InCPUBattle{get;set;}
 
     //シーンをまたいでも破壊されない
     public static GameDateManager Instance{get; private set;}
