@@ -42,7 +42,7 @@ public class PlayerController1 :Photon.Pun.MonoBehaviourPun
          if (_vertical >0)
         {            
             transform.position += transform.forward * _vertical/10f * _vertical;
-            _animator.SetFloat("Speed",0.2f);
+            _animator.SetFloat("Speed",1.0f*_vertical);
         }
         else if (_vertical <0)
         {            

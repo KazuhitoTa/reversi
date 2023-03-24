@@ -74,7 +74,6 @@ namespace osero
 
         public void FirstOrSecond()
         {
-            //
             whatColorPlayer.text=PhotonNetwork.IsMasterClient?"I'm Black":"I'm White";
         }
         
@@ -83,7 +82,6 @@ namespace osero
         /// </summary>
         public void MarkerSetUp()
         {
-            
             int a = 0;
             foreach (Transform childTransform in MarkerManger.transform)
             {

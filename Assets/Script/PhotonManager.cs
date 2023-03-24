@@ -37,7 +37,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom() 
     {
         inRoom=true;
-        Debug.Log($"入ったで");
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
