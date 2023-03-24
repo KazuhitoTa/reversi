@@ -71,13 +71,6 @@ namespace UnityChan
 			transform.forward = frontPos.forward;
 		}
 
-		void setCameraPositionJumpView ()
-		{
-			// Change Jump Camera
-			bQuickSwitch = false;
-			transform.position = Vector3.Lerp (transform.position, jumpPos.position, Time.fixedDeltaTime * smooth);	
-			transform.forward = Vector3.Lerp (transform.forward, jumpPos.forward, Time.fixedDeltaTime * smooth);		
-		}
 
 		void CheckInstance()
     	{

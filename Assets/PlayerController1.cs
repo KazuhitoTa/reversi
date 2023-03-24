@@ -35,7 +35,7 @@ public class PlayerController1 :Photon.Pun.MonoBehaviourPun
 
     void FixedUpdate()
     {
-        //if(!photonView.IsMine) return;   // ★追加
+        if(!photonView.IsMine) return;   // ★追加
         _horizontal = Input.GetAxis("Horizontal");
         _vertical = Input.GetAxis("Vertical");
 

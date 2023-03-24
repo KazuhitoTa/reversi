@@ -9,11 +9,7 @@ public class RandomMatchMaker : MonoBehaviourPunCallbacks
     // インスペクターから設定
     public GameObject PhotonObject;
     private GameObject player;
-    void Awake()
-    {
-        
-    }
-
+    
     void Start()
     {
         PhotonNetwork.ConnectUsingSettings();
