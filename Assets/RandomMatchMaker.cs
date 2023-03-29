@@ -10,6 +10,11 @@ public class RandomMatchMaker : MonoBehaviourPunCallbacks
     public GameObject PhotonObject;
     private GameObject player;
     
+    void Awake() 
+    {
+        Application.targetFrameRate = 60; //60FPSに設定
+        Debug.Log(Application.targetFrameRate);
+    }
     void Start()
     {
         PhotonNetwork.ConnectUsingSettings();
@@ -35,10 +40,9 @@ public class RandomMatchMaker : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         player=PhotonNetwork.Instantiate(PhotonObject.name,new Vector3(0f, 1f, 0f),Quaternion.identity,0);
-        
-        //player.GetPhotonView().RPC("SetName", RpcTarget.AllBuffered, PhotonNetwork.NickName);
-       
-        //GameObject maincamera = GameObject.FindWithTag("MainCamera");
-        //maincamera.GetComponent<UnityChan.ThirdPersonCamera>().enabled = true;
+        Transform tmp=player.transform.Find("CamPos");
+        Car.CarCamera.target=tmp;
+        GameObject maincamera = GameObject.FindWithTag("MainCamera");
+        maincamera.GetComponent<Car.CarCamera>().enabled = true;
     }
 }

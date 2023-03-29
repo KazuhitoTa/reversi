@@ -8,11 +8,6 @@ public class CarMove :Photon.Pun.MonoBehaviourPun
     public AudioSource engine;
     private float _horizontal;
     private float _vertical;
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
 
     // Update is called once per frame
     void Update()
@@ -24,18 +19,20 @@ public class CarMove :Photon.Pun.MonoBehaviourPun
          if (_vertical >0)
         {         
             engine.Play();   
-            transform.position += transform.forward * _vertical/100f * _vertical*-1;
+            transform.position += transform.forward * _vertical * _vertical*-10*Time.deltaTime;
+            transform.Rotate(new Vector3(0, 100f * _horizontal*Time.deltaTime, 0));
         }
         else if (_vertical <0)
         {    
             engine.Play();         
-            transform.position += transform.forward * 0.02f * _vertical*-1;
+            transform.position += transform.forward *_vertical*-5*Time.deltaTime;
+            transform.Rotate(new Vector3(0, 100f * _horizontal*Time.deltaTime, 0));
         }
         else
         {
             engine.Pause();
         }
 
-        transform.Rotate(new Vector3(0, 0.2f * _horizontal, 0));
+        
     }
 }
