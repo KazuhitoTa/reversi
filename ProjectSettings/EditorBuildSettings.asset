@@ -5,13 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/Title.unity
+  - enabled: 1
+    path: Assets/Scenes/OseroTitle.unity
     guid: 82a140a9f74964548aaa6764d547bf2f
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Online.unity
     guid: 15964da75b1871c438c9e121b36863cc
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
