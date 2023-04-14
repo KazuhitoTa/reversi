@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
@@ -43,7 +44,6 @@ namespace osero
         public List<GameObject> ReverseDisk = new List<GameObject>();
         public List<int> ReverseDisktmp1 = new List<int>();
         public List<int> ReverseDisktmp2 = new List<int>();
-        
         public bool PutOK;
         public bool Okeru;
         public TextMeshProUGUI tran;
@@ -52,7 +52,8 @@ namespace osero
         public GameObject okerunPre;
         public GameObject[,] okerun=new GameObject[8,8];
         public bool SkipCheck;
-        public bool EndCheck;     
+        public bool EndCheck; 
+        public GameObject networkErrorComment;    
 
         void Awake()
         {
@@ -70,6 +71,24 @@ namespace osero
         void Update()
         {
             DiskPut();//オセロの駒を置く
+            NetworkError();//接続エラー  
+        }
+
+        void NetworkError()
+        {
+            if(PhotonNetwork.CurrentRoom.PlayerCount!=2)
+            {
+                networkErrorComment.SetActive(true);
+                
+                
+                Invoke("GoTitle", 2.0f);
+            }
+            
+        }
+        public void GoTitle()
+        {
+            PhotonNetwork.Disconnect();
+            SceneManager.LoadScene("OseroTitle");
         }
 
         public void FirstOrSecond()
