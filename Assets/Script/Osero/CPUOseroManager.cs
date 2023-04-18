@@ -470,16 +470,6 @@ namespace osero
         }
 
         /// <summary>
-        /// 次の相手のターンの置ける場所が最小になるような位置に打つ
-        /// </summary>
-        void AImin()
-        {
-            
-        }
-
-        
-
-        /// <summary>
         /// ゲームが終わった時の処理
         /// </summary>
         void GameEnd()
@@ -500,6 +490,9 @@ namespace osero
                     blackCount++;
                 }
             }
+            if(whiteCount>blackCount)Debug.Log("白の勝ち");
+            else if(whiteCount==blackCount)Debug.Log("引き分け");
+            else Debug.Log("黒の勝ち");
             
             Debug.Log("白が"+whiteCount);
             Debug.Log("黒が"+blackCount);

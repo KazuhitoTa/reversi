@@ -53,7 +53,7 @@ namespace osero
         public GameObject[,] okerun=new GameObject[8,8];
         public bool SkipCheck;
         public bool EndCheck; 
-        public GameObject networkErrorComment;    
+        public TextMeshPro networkErrorComment;    
 
         void Awake()
         {
@@ -78,12 +78,9 @@ namespace osero
         {
             if(PhotonNetwork.CurrentRoom.PlayerCount!=2)
             {
-                networkErrorComment.SetActive(true);
-                
-                
+                networkErrorComment.text="EnemyPlayerLost";
                 Invoke("GoTitle", 2.0f);
-            }
-            
+            }    
         }
         public void GoTitle()
         {
@@ -520,6 +517,13 @@ namespace osero
                     blackCount++;
                 }
             }
+
+            if(whiteCount>blackCount)Debug.Log("白の勝ち");
+            else if(whiteCount==blackCount)Debug.Log("引き分け");
+            else Debug.Log("黒の勝ち");
+
+            //Debug.Log(PhotonNetwork.IsMasterClient?"I'm Black":"I'm White");
+
             
             Debug.Log("白が"+whiteCount);
             Debug.Log("黒が"+blackCount);
