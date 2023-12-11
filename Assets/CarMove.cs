@@ -8,7 +8,7 @@ public class CarMove :Photon.Pun.MonoBehaviourPun
     public AudioSource engine;
     private float _horizontal;
     private float _vertical;
-
+    private Collider goalCollision;
     // Update is called once per frame
     void Update()
     {
@@ -35,4 +35,14 @@ public class CarMove :Photon.Pun.MonoBehaviourPun
 
         
     }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other == goalCollision)
+        {
+            Debug.Log("hit");
+        }
+    }
+
+
 }

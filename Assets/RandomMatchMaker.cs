@@ -39,7 +39,7 @@ public class RandomMatchMaker : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        player=PhotonNetwork.Instantiate(PhotonObject.name,new Vector3(0f, 1f, 0f),Quaternion.identity,0);
+        player=PhotonNetwork.Instantiate(PhotonObject.name,new Vector3(0f, 1f, 27f),Quaternion.Euler(new Vector3(0f,90f,0)),0);
         Transform tmp=player.transform.Find("CamPos");
         Car.CarCamera.target=tmp;
         GameObject maincamera = GameObject.FindWithTag("MainCamera");
